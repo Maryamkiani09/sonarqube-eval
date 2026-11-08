@@ -29,9 +29,11 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run tests and coverage
+        env:
+          PYTHONPATH: src
         run: |
-          # We use --cov-report=xml to enforce the correct paths
-          python -m pytest --cov=src/shopflow --cov-report=xml:reports/coverage.xml
+          # --cov=shopflow ensures we track the package inside src
+          python -m pytest --cov=shopflow --cov-report=xml:reports/coverage.xml
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v3
