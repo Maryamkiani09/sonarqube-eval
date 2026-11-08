@@ -1,0 +1,8 @@
+# CloudFormation fixture (IaC analysis)
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  LogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: shopflow-logs
+      AccessControl: PublicRead

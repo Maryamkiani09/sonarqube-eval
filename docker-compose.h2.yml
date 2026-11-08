@@ -1,0 +1,13 @@
+# Database-option experiment (Person 6): SonarQube on its EMBEDDED H2 database.
+# H2 is for evaluation only and cannot be upgraded - do not use it for real data.
+#   docker compose -f docker-compose.h2.yml up -d     -> http://localhost:9001
+# Compare Administration > System (Database section) with the PostgreSQL stack.
+services:
+  sonarqube-h2:
+    image: sonarqube:community
+    ports:
+      - "9001:9000"
+    volumes:
+      - h2_data:/opt/sonarqube/data
+volumes:
+  h2_data:

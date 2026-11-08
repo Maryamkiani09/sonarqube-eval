@@ -1,0 +1,30 @@
+# GitHub Actions: test -> analyse -> fail the build if the quality gate fails.
+# Needs repository secrets SONAR_TOKEN and SONAR_HOST_URL. The runner must be able to REACH
+# your SonarQube server (a localhost instance is not reachable from GitHub-hosted runners:
+# use a public/VPN-reachable server or a self-hosted runner).
+# Check the Marketplace for the current major version of the SonarSource actions.
+name: sonarqube
+on:
+  push:
+    branches: [main]          # Community Build analyses the main branch only
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # full history helps SCM blame / new-code detection
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements-dev.txt
+      - run: |
+          mkdir -p reports
+          python -m pytest -q -o junit_family=xunit1 --junitxml=reports/junit.xml \
+            --cov --cov-config=.coveragerc --cov-report=xml:reports/coverage.xml
+      - uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: -Dsonar.qualitygate.wait=true      # scanner exits non-zero when the gate fails

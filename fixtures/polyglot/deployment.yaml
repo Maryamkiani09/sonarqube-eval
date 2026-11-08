@@ -1,0 +1,20 @@
+# Kubernetes fixture (IaC analysis)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopflow
+  template:
+    metadata:
+      labels:
+        app: shopflow
+    spec:
+      containers:
+        - name: web
+          image: nginx:latest
+          securityContext:
+            privileged: true

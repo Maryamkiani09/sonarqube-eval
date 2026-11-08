@@ -1,0 +1,29 @@
+// Jenkins declarative pipeline.
+// Prerequisites: "SonarQube Scanner for Jenkins" plugin; Manage Jenkins > System >
+// SonarQube servers: add one named 'sonarqube' with a token credential; a
+// 'SonarScanner' tool configured in Tools (name below must match).
+pipeline {
+  agent any
+  environment { VERSION = "1.${BUILD_NUMBER}" }
+  stages {
+    stage('Test') {
+      steps {
+        sh 'python3 -m pip install -r requirements-dev.txt'
+        sh 'mkdir -p reports && python3 -m pytest -q -o junit_family=xunit1 --junitxml=reports/junit.xml --cov --cov-config=.coveragerc --cov-report=xml:reports/coverage.xml'
+      }
+    }
+    stage('SonarQube analysis') {
+      steps {
+        withSonarQubeEnv('sonarqube') {
+          sh "${tool 'SonarScanner'}/bin/sonar-scanner -Dsonar.projectVersion=${VERSION}"
+        }
+      }
+    }
+    stage('Quality gate') {
+      steps {
+        // needs a webhook in SonarQube pointing to  <jenkins>/sonarqube-webhook/
+        timeout(time: 10, unit: 'MINUTES') { waitForQualityGate abortPipeline: true }
+      }
+    }
+  }
+}

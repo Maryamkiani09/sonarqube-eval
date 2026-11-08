@@ -1,0 +1,31 @@
+# GitLab CI (copy to the repository root as .gitlab-ci.yml).
+# CI/CD variables to define: SONAR_TOKEN, SONAR_HOST_URL.
+stages: [test, sonar]
+
+unit-tests:
+  stage: test
+  image: python:3.13
+  script:
+    - pip install -r requirements-dev.txt
+    - mkdir -p reports
+    - python -m pytest -q -o junit_family=xunit1 --junitxml=reports/junit.xml --cov --cov-config=.coveragerc --cov-report=xml:reports/coverage.xml
+  artifacts:
+    paths: [reports/]
+    when: always
+
+sonarqube-check:
+  stage: sonar
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  variables:
+    GIT_DEPTH: "0"
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+  cache:
+    key: sonar-cache
+    paths: [.sonar/cache]
+  script:
+    - sonar-scanner -Dsonar.qualitygate.wait=true   # job fails when the gate fails
+  allow_failure: false
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

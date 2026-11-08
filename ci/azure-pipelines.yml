@@ -1,0 +1,24 @@
+# Azure DevOps. Install the "SonarQube" extension from the Marketplace and create a
+# service connection named 'sonarqube-conn'. Task versions change - check the extension docs.
+trigger:
+  branches:
+    include: [main]
+pool:
+  vmImage: ubuntu-latest
+steps:
+  - task: UsePythonVersion@0
+    inputs: { versionSpec: "3.13" }
+  - script: |
+      pip install -r requirements-dev.txt
+      mkdir -p reports
+      python -m pytest -q -o junit_family=xunit1 --junitxml=reports/junit.xml --cov --cov-config=.coveragerc --cov-report=xml:reports/coverage.xml
+    displayName: Unit tests + coverage
+  - task: SonarQubePrepare@7
+    inputs:
+      SonarQube: sonarqube-conn
+      scannerMode: CLI
+      configMode: file            # reads sonar-project.properties
+  - task: SonarQubeAnalyze@7
+  - task: SonarQubePublish@7      # waits for the gate and fails the pipeline on ERROR
+    inputs:
+      pollingTimeoutSec: "300"

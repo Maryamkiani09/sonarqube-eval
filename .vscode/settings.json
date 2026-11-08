@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "local-sonar",
+        "projectKey": "my-sonar-test"
+    }
+}
