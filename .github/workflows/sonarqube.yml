@@ -30,7 +30,7 @@ jobs:
 
       - name: Run tests and coverage
         run: |
-          echo -e "[run]\nrelative_files = True" > .coveragerc
+          # We use --cov-report=xml to enforce the correct paths
           python -m pytest --cov=src/shopflow --cov-report=xml:reports/coverage.xml
 
       - name: SonarQube Scan
