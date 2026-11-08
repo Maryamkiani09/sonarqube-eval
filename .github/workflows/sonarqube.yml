@@ -30,6 +30,7 @@ jobs:
 
       - name: Run tests and coverage
         run: |
+          echo -e "[run]\nrelative_files = True" > .coveragerc
           python -m pytest --cov=src/shopflow --cov-report=xml:reports/coverage.xml
 
       - name: SonarQube Scan
@@ -43,3 +44,4 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.tests=tests
             -Dsonar.python.coverage.reportPaths=reports/coverage.xml
+            -Dsonar.qualitygate.wait=true
